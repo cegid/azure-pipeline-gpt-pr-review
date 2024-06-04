@@ -1,11 +1,11 @@
 import fetch from 'node-fetch';
-import { git } from './git';
 import { OpenAIApi } from 'openai';
 import { addCommentToPR } from './pr';
 import { Agent } from 'https';
 import * as tl from "azure-pipelines-task-lib/task";
+import { SimpleGit } from 'simple-git';
 
-export async function reviewFile(targetBranch: string, fileName: string, httpsAgent: Agent, apiKey: string, openai: OpenAIApi | undefined, aoiEndpoint: string | undefined) {
+export async function reviewFile(git: SimpleGit, targetBranch: string, fileName: string, httpsAgent: Agent, apiKey: string, openai: OpenAIApi | undefined, aoiEndpoint: string | undefined) {
   console.log(`Start reviewing ${fileName} ...`);
 
   const defaultOpenAIModel = 'gpt-3.5-turbo';
