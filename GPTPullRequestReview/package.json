@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc -p ."
+    "build": "tsc -p .",
+    "test": "vitest",
+    "coverage": "vitest run --coverage"
   },
   "keywords": [],
   "author": "",
@@ -20,6 +22,7 @@
     "@types/node": "^18.15.3",
     "@types/node-fetch": "^2.6.4",
     "@types/q": "^1.5.5",
+    "vite-plugin-watch-and-run": "^1.7.0",
     "vitest": "^1.6.0"
   }
 }
