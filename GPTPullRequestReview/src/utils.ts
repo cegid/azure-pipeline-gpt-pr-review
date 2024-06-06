@@ -8,7 +8,7 @@ export function getTargetBranchName() {
   let targetBranchName = tl.getVariable('System.PullRequest.TargetBranchName');
 
   if (!targetBranchName) {
-    targetBranchName = tl.getVariable('System.PullRequest.TargetBranch')?.replace('refs/heads/', '');
+    targetBranchName = targetBranchName?.replace('refs/heads/', '');
   }
 
   if (!targetBranchName) {

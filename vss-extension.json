@@ -18,7 +18,7 @@
         "Azure Pipelines"
     ],
     "icons": {
-        "default": "images/icon.png"        
+        "default": "images/icon.png"
     },
     "tags": [
         "OpenAI",
