@@ -2,13 +2,19 @@ import * as tl from "azure-pipelines-task-lib/task";
 import { Agent } from 'https';
 import fetch from 'node-fetch';
 
-const systemCollectionUri = tl.getVariable('SYSTEM.TEAMFOUNDATIONCOLLECTIONURI');
-const systemProjectId = tl.getVariable('SYSTEM.TEAMPROJECTID');
-const systemRepositoryName = tl.getVariable('Build.Repository.Name');
-const systemPullRequestId = tl.getVariable('System.PullRequest.PullRequestId');
-const systemAccessToken = tl.getVariable('SYSTEM.ACCESSTOKEN')};
-const systemProject = tl.getVariable('SYSTEM.TEAMPROJECT');
+function getSystemVariables() {
+  return {
+    systemCollectionUri: tl.getVariable('SYSTEM.TEAMFOUNDATIONCOLLECTIONURI'),
+    systemProjectId: tl.getVariable('SYSTEM.TEAMPROJECTID'),
+    systemRepositoryName: tl.getVariable('Build.Repository.Name'),
+    systemPullRequestId: tl.getVariable('System.PullRequest.PullRequestId'),
+    systemAccessToken: tl.getVariable('SYSTEM.ACCESSTOKEN'),
+    systemProject: tl.getVariable('SYSTEM.TEAMPROJECT')
+  };
+}
+
 export async function addCommentToPR(fileName: string, comment: string, httpsAgent: Agent) {
+  const { systemCollectionUri, systemProjectId, systemRepositoryName, systemPullRequestId, systemAccessToken } = getSystemVariables();
   const body = {
     comments: [
       {
@@ -36,6 +42,8 @@ export async function addCommentToPR(fileName: string, comment: string, httpsAge
 }
 
 export async function deleteExistingComments(httpsAgent: Agent) {
+  const { systemCollectionUri, systemProjectId, systemRepositoryName, systemPullRequestId, systemAccessToken, systemProject } = getSystemVariables();
+
   console.log("Start deleting existing comments added by the previous Job ...");
 
   const threadsUrl = `${systemCollectionUri}${systemProjectId}/_apis/git/repositories/${systemRepositoryName}/pullRequests/${systemPullRequestId}/threads?api-version=5.1`;

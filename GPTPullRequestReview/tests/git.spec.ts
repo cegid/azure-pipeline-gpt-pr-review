@@ -1,8 +1,6 @@
 import { test, expect, vi } from 'vitest'
 import { simpleGit, SimpleGit } from 'simple-git';
-import * as tl from "azure-pipelines-task-lib/task";
-import binaryExtensions from 'binary-extensions';
-import { initializeGit, getChangedFiles } from '../src/git';
+import { getChangedFiles } from '../src/git';
 
 
 test('getChangedFiles: should return non-binary changed files', async () => {
