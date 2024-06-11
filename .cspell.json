@@ -11,6 +11,10 @@
 		".*"
 	],
 	"words": [
-		"openai"
+		"ACCESSTOKEN",
+		"openai",
+		"TEAMFOUNDATIONCOLLECTIONURI",
+		"TEAMPROJECT",
+		"TEAMPROJECTID"
 	]
 }
