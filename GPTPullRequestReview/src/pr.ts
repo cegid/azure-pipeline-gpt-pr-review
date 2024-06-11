@@ -13,6 +13,16 @@ function getSystemVariables() {
   };
 }
 
+/**
+ * Adds a new comment to a pull request.
+ *
+ * @param {Agent} httpsAgent - The https agent to use for requests.
+ * @param {string} fileName - The name of the file to add the comment to.
+ * @param {string} comment - The comment to add.
+ * @returns {Promise<void>} A promise that resolves when the comment has been added.
+ *
+ * This function retrieves system variables from the Azure DevOps environment, then uses these variables to make a request to the Azure DevOps API to add a comment.
+ */
 export async function addCommentToPR(fileName: string, comment: string, httpsAgent: Agent) {
   const { systemCollectionUri, systemProjectId, systemRepositoryName, systemPullRequestId, systemAccessToken } = getSystemVariables();
   const body = {
@@ -41,35 +51,69 @@ export async function addCommentToPR(fileName: string, comment: string, httpsAge
   console.log(`New comment added.`);
 }
 
+/**
+ * Deletes existing comments from a pull request.
+ *
+ * @param {Agent} httpsAgent - The https agent to use for requests.
+ * @returns {Promise<void>} A promise that resolves when all comments have been deleted.
+ *
+ * This function retrieves system variables from the Azure DevOps environment, then uses these variables to make requests to the Azure DevOps API to delete comments.
+ */
 export async function deleteExistingComments(httpsAgent: Agent) {
-  const { systemCollectionUri, systemProjectId, systemRepositoryName, systemPullRequestId, systemAccessToken, systemProject } = getSystemVariables();
+  // Retrieve system variables from Azure DevOps environment
+  const {
+    systemCollectionUri,
+    systemProjectId,
+    systemRepositoryName,
+    systemPullRequestId,
+    systemAccessToken,
+    systemProject
+  } = getSystemVariables();
 
+  // Logging the start of the process
   console.log("Start deleting existing comments added by the previous Job ...");
 
+  // Construct the URL to fetch threads associated with the current pull request
   const threadsUrl = `${systemCollectionUri}${systemProjectId}/_apis/git/repositories/${systemRepositoryName}/pullRequests/${systemPullRequestId}/threads?api-version=5.1`;
+  
+  // Fetch threads from Azure DevOps API
   const threadsResponse = await fetch(threadsUrl, {
     headers: { Authorization: `Bearer ${systemAccessToken}` },
-    agent: httpsAgent
+    agent: httpsAgent  // Using HTTPS agent for request configuration
   });
 
+  // Parse the JSON response to get threads data
   const threads = await threadsResponse.json() as { value: [] };
+  
+  // Filter threads to only those that have a context (i.e., linked to a specific file or change)
   const threadsWithContext = threads.value.filter((thread: any) => thread.threadContext !== null);
 
+  // Retrieve the collection name from the system collection URI
   const collectionName = getCollectionName(systemCollectionUri);
+  
+  // Build the display name used to identify comments made by the Azure build service
   const buildServiceName = `${systemProject} Build Service (${collectionName})`;
 
+  // Iterate over each thread that has context
   for (const thread of threadsWithContext as any[]) {
+    // Construct URL to fetch comments for each thread
     const commentsUrl = `${systemCollectionUri}${systemProjectId}/_apis/git/repositories/${systemRepositoryName}/pullRequests/${systemPullRequestId}/threads/${thread.id}/comments?api-version=5.1`;
+    
+    // Fetch comments from the Azure DevOps API
     const commentsResponse = await fetch(commentsUrl, {
       headers: { Authorization: `Bearer ${systemAccessToken}` },
       agent: httpsAgent
     });
 
+    // Parse the JSON response to get comments data
     const comments = await commentsResponse.json() as { value: [] };
 
+    // Filter and delete comments made by the build service
     for (const comment of comments.value.filter((comment: any) => comment.author.displayName === buildServiceName) as any[]) {
+      // Construct URL for deleting a specific comment
       const removeCommentUrl = `${systemCollectionUri}${systemProjectId}/_apis/git/repositories/${systemRepositoryName}/pullRequests/${systemPullRequestId}/threads/${thread.id}/comments/${comment.id}?api-version=5.1`;
 
+      // Perform the delete operation
       await fetch(removeCommentUrl, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${systemAccessToken}` },
@@ -78,9 +122,19 @@ export async function deleteExistingComments(httpsAgent: Agent) {
     }
   }
 
+  // Log completion of the deletion process
   console.log("Existing comments deleted.");
 }
 
+/**
+ * Retrieves the collection name from the collection URI.
+ *
+ * @param {string | undefined} collectionUri - The URI of the collection from which to retrieve the name.
+ * @returns {string} The name of the collection.
+ *
+ * If the URI contains '.visualstudio.', the collection name is the part of the URI before '.visualstudio.'.
+ * Otherwise, the collection name is the second part of the URI (after the first '/').
+ */
 function getCollectionName(collectionUri: string | undefined) {
   const collectionUriWithoutProtocol = collectionUri!.replace('https://', '').replace('http://', '');
 

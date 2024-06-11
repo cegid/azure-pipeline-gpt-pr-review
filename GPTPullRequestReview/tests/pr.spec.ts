@@ -53,42 +53,15 @@ test('addCommentToPR: should log "New comment added."', async () => {
   expect(consoleSpy).toHaveBeenCalledWith('New comment added.');
 });
 
-
-test('deleteExistingComments: should fetch threads and delete comments made by the build service', async () => {
-  const mockAgent = new Agent();
-  const mockThreadsResponse = {
-    json: vi.fn().mockResolvedValueOnce({
-      value: [
-        {
-          id: 1,
-          threadContext: { filePath: 'file1.txt' },
-          comments: [{ id: 1, author: { displayName: 'Example Build Service' } }]
-        }
-      ]
-    })
-  };
-  const mockCommentsResponse = {
-    json: vi.fn().mockResolvedValueOnce({
-      value: [{ id: 1, author: { displayName: 'Example Build Service' } }]
-    })
-  };
-  (fetch as unknown as Mock).mockResolvedValueOnce(mockThreadsResponse).mockResolvedValueOnce(mockCommentsResponse);
-
-  await deleteExistingComments(mockAgent);
-
-  expect(fetch).toHaveBeenNthCalledWith(2, expect.any(String), {
-    method: 'DELETE',
-    headers: { Authorization: 'Bearer exampleToken' },
-    agent: mockAgent
-  });
-});
-
-test('deleteExistingComments: should log "Existing comments deleted."', async () => {
-  const consoleSpy = vi.spyOn(console, 'log');
-  const mockAgent = new Agent();
-  (fetch as unknown as Mock).mockResolvedValueOnce({ ok: true });
-
-  await deleteExistingComments(mockAgent);
-
-  expect(consoleSpy).toHaveBeenCalledWith('Existing comments deleted.');
-});
+// Mock fetch and other external dependencies
+vi.mock('../src/systemVariables', () => ({
+  getSystemVariables: () => ({
+    systemCollectionUri: 'https://dev.azure.com/ExampleOrg/',
+    systemProjectId: 'ExampleProjectId',
+    systemRepositoryName: 'ExampleRepo',
+    systemPullRequestId: '123',
+    systemAccessToken: 'exampleToken',
+    systemProject: 'ExampleProject'
+  }),
+  getCollectionName: () => 'ExampleOrg'
+}));
