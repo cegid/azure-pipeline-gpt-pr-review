@@ -2,6 +2,19 @@ import * as tl from "azure-pipelines-task-lib/task";
 import { Agent } from 'https';
 import fetch from 'node-fetch';
 
+
+/**
+ * Retrieves system variables from the runtime environment.
+ * These variables are typically set by the CI/CD system.
+ *
+ * @returns {Object} An object containing the following system variables:
+ * - systemCollectionUri: The URI of the system team collection.
+ * - systemProjectId: The ID of the system project.
+ * - systemRepositoryName: The name of the build repository.
+ * - systemPullRequestId: The ID of the system pull request.
+ * - systemAccessToken: The system access token.
+ * - systemProject: The system project.
+ */
 function getSystemVariables() {
   return {
     systemCollectionUri: tl.getVariable('SYSTEM.TEAMFOUNDATIONCOLLECTIONURI'),
@@ -12,7 +25,6 @@ function getSystemVariables() {
     systemProject: tl.getVariable('SYSTEM.TEAMPROJECT')
   };
 }
-
 /**
  * Adds a new comment to a pull request.
  *
