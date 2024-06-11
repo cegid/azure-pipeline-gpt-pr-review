@@ -113,3 +113,6 @@ Desktop.ini
 
 # TernJS port file
 .tern-port
+
+# unknow 
+.taskkey
