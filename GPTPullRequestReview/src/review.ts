@@ -1,10 +1,10 @@
 import fetch from 'node-fetch';
-import { OpenAIApi } from 'openai';
+import { git } from './git';
+import OpenAI from 'openai';
 import { addCommentToPR } from './pr';
 import { Agent } from 'https';
 import * as tl from "azure-pipelines-task-lib/task";
 import { SimpleGit } from 'simple-git';
-
 /**
  * Reviews a file using OpenAI's GPT-3 model.
  * The review is based on the diff between the target branch and the file.
@@ -18,8 +18,7 @@ import { SimpleGit } from 'simple-git';
  * @param {OpenAIApi | undefined} openai - The OpenAI instance.
  * @param {string | undefined} aoiEndpoint - The endpoint for the AI.
  */
-export async function reviewFile(git: SimpleGit, targetBranch: string, fileName: string, httpsAgent: Agent, apiKey: string, openai: OpenAIApi | undefined, aoiEndpoint: string | undefined) {
-  // Log the start of the review
+export async function reviewFile(git: SimpleGit, targetBranch: string, fileName: string, httpsAgent: Agent, apiKey: string, openai: OpenAI | undefined, aoiEndpoint: string | undefined) {
   console.log(`Start reviewing ${fileName} ...`);
 
   // Define the default OpenAI model
@@ -43,7 +42,7 @@ export async function reviewFile(git: SimpleGit, targetBranch: string, fileName:
 
     // If an OpenAI instance is provided, use it to create a chat completion
     if (openai) {
-      const response = await openai.createChatCompletion({
+      const response = await openai.chat.completions.create({
         model: tl.getInput('model') || defaultOpenAIModel,
         messages: [
           {
@@ -58,8 +57,7 @@ export async function reviewFile(git: SimpleGit, targetBranch: string, fileName:
         max_tokens: 500
       });
 
-      // Get the choices from the response
-      choices = response.data.choices
+      choices = response.choices
     }
     // If an AI endpoint is provided, use it to create a chat completion
     else if (aoiEndpoint) {

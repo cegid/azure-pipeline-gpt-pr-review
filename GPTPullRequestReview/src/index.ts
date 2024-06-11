@@ -1,5 +1,5 @@
 import * as tl from "azure-pipelines-task-lib/task";
-import { Configuration, OpenAIApi } from 'openai';
+import OpenAI from 'openai';
 import { deleteExistingComments } from './pr';
 import { reviewFile } from './review';
 import { getTargetBranchName } from './utils';
@@ -22,7 +22,7 @@ async function run() {
     }
 
     // Initialize variables
-    let openai: OpenAIApi | undefined;
+    let openai: OpenAI | undefined;
     const supportSelfSignedCertificate = tl.getBoolInput('support_self_signed_certificate');
     const apiKey = tl.getInput('api_key', true);
     const aoiEndpoint = tl.getInput('aoi_endpoint');
@@ -36,11 +36,10 @@ async function run() {
 
     // Check if an AOI endpoint is provided
     if (aoiEndpoint == undefined) {
-      const openAiConfiguration = new Configuration({
+
+      openai = new OpenAI({
         apiKey: apiKey,
       });
-
-      openai = new OpenAIApi(openAiConfiguration);
     }
 
     // Initialize Git with the working directory
