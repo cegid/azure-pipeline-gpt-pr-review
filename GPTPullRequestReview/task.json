@@ -1,5 +1,5 @@
 {
-  "id": "b42fa530-c4a6-11ed-87f6-d1f44a1fead1",
+  "id": "6a48daa4-28a5-11ef-bade-17fc1f4b35d1",
   "name": "GPTPullRequestReviewCegid",
   "friendlyName": "Review PullRequest by GPT. Cegid version",
   "description": "This task use OpenAi GPT model to review PullRequests. Cegid version.",
@@ -12,8 +12,8 @@
   "demands": [],
   "version": {
     "Major": "0",
-    "Minor": "12",
-    "Patch": "3"
+    "Minor": "13",
+    "Patch": "0"
   },
   "minimumAgentVersion": "1.95.0",
   "instanceNameFormat": "GPTPullRequestReviewCegid $(message)",

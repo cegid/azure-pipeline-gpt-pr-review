@@ -12,7 +12,7 @@
         {
             "id": "Microsoft.VisualStudio.Services"
         }
-    ],    
+    ],
     "description": "A task that review Pull Request using GPT model from OpenAI. Cegid version.",
     "categories": [
         "Azure Pipelines"
@@ -28,12 +28,12 @@
     ],
     "files": [
         {
-            "path": "GPTPullRequestReviewCegid"
+            "path": "GPTPullRequestReview"
         }
     ],
-    "repository" : {
-        "type" : "git",
-        "uri" : "https://github.com/cegid/azure-pipeline-gpt-pr-review/"
+    "repository": {
+        "type": "git",
+        "uri": "https://github.com/cegid/azure-pipeline-gpt-pr-review/"
     },
     "content": {
         "details": {
