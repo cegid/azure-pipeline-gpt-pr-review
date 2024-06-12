@@ -57,7 +57,7 @@
     }
   ],
   "execution": {
-    "Node10": {
+    "Node20": {
       "target": "dist/index.js"
     }
   }
