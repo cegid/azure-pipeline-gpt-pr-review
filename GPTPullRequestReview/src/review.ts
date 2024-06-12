@@ -1,5 +1,4 @@
 import fetch from 'node-fetch';
-import { git } from './git';
 import OpenAI from 'openai';
 import { addCommentToPR } from './pr';
 import { Agent } from 'https';
@@ -74,9 +73,9 @@ export async function reviewFile(git: SimpleGit, targetBranch: string, fileName:
       });
 
       // Get the choices from the response
-      const response = await request.json();
+      const response:any = await request.json();
 
-      choices = response.choices;
+      choices = response?.choices;
     }
 
     // If there are choices, get the review from the first choice

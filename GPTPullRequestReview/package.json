@@ -23,6 +23,7 @@
     "@types/node": "^20.14.2",
     "@types/node-fetch": "^3.0.3",
     "@types/q": "^1.5.8",
+    "typescript": "^5.4.5",
     "vite-plugin-watch-and-run": "^1.7.0",
     "vitest": "^1.6.0"
   }
