@@ -1,0 +1,20 @@
+{
+	"version": "0.2",
+	"language": "en",
+	"ignorePaths": [
+		"**/.git/**",
+		"**/.vscode/**",
+		"**/build/**",
+		"**/dist/**",
+		"**/node_modules/**",
+		"**/package-lock.json",
+		".*"
+	],
+	"words": [
+		"ACCESSTOKEN",
+		"openai",
+		"TEAMFOUNDATIONCOLLECTIONURI",
+		"TEAMPROJECT",
+		"TEAMPROJECTID"
+	]
+}

@@ -5,6 +5,8 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc -p .",
+    "test": "vitest",
+    "coverage": "vitest run --coverage",
     "update-dependencies": "npx -y npm-check-updates -i"
   },
   "keywords": [],
@@ -14,12 +16,14 @@
     "azure-pipelines-task-lib": "^4.13.0",
     "binary-extensions": "^3.0.0",
     "node-fetch": "^3.3.2",
-    "openai": "^4.47.3",
-    "simple-git": "^3.24.0"
+    "openai": "^4.50.0",
+    "simple-git": "^3.25.0"
   },
   "devDependencies": {
-    "@types/node": "^20.14.1",
+    "@types/node": "^20.14.2",
     "@types/node-fetch": "^3.0.3",
-    "@types/q": "^1.5.8"
+    "@types/q": "^1.5.8",
+    "vite-plugin-watch-and-run": "^1.7.0",
+    "vitest": "^1.6.0"
   }
 }
