@@ -13,7 +13,7 @@
   "version": {
     "Major": "0",
     "Minor": "13",
-    "Patch": "0"
+    "Patch": "3"
   },
   "minimumAgentVersion": "1.95.0",
   "instanceNameFormat": "GPTPullRequestReviewCegid $(message)",
@@ -57,7 +57,7 @@
     }
   ],
   "execution": {
-    "Node20": {
+    "Node10": {
       "target": "dist/index.js"
     }
   }

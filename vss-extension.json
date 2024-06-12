@@ -2,7 +2,7 @@
     "manifestVersion": 1,
     "id": "GPTPullRequestReviewCegid",
     "name": "GPT Pull Request Review Cegid",
-    "version": "0.13.0",
+    "version": "0.13.3",
     "publisher": "cegid",
     "galleryFlags": [
         "Public",
