@@ -1,10 +1,10 @@
 {
   "id": "b42fa530-c4a6-11ed-87f6-d1f44a1fead1",
-  "name": "GPTPullRequestReview",
-  "friendlyName": "Review PullRequest by GPT",
-  "description": "This task use OpenAi GPT model to review PullRequests",
-  "author": "Mustapha Larhrouch",
-  "helpMarkDown": "[More Information](https://github.com/mlarhrouch/azure-pipeline-gpt-pr-review)",
+  "name": "GPTPullRequestReviewCegid",
+  "friendlyName": "Review PullRequest by GPT. Cegid version",
+  "description": "This task use OpenAi GPT model to review PullRequests. Cegid version.",
+  "author": "Cegid",
+  "helpMarkDown": "[More Information](https://github.com/cegid/azure-pipeline-gpt-pr-review)",
   "category": "Utility",
   "visibility": [
     "Build"
@@ -16,7 +16,7 @@
     "Patch": "3"
   },
   "minimumAgentVersion": "1.95.0",
-  "instanceNameFormat": "GPTPullRequestReview $(message)",
+  "instanceNameFormat": "GPTPullRequestReviewCegid $(message)",
   "inputs": [
     {
       "name": "api_key",
