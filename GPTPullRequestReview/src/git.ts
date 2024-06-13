@@ -1,5 +1,4 @@
 import { SimpleGit, simpleGit } from 'simple-git';
-import binaryExtensions from 'binary-extensions';
 import { getFileExtension } from './utils';
 
 /**
@@ -24,6 +23,7 @@ export async function getChangedFiles(git: SimpleGit, targetBranch: string) {
 
   const diffs: string = await git.diff([targetBranch, '--name-only', '--diff-filter=AM']);
   const files = diffs.split('\n').filter(line => line.trim().length > 0);
+  const binaryExtensions = (await import('binary-extensions')).default;
   const nonBinaryFiles = files.filter(file => !binaryExtensions.includes(getFileExtension(file)));
 
   console.log(`Changed Files (excluding binary files) : \n ${nonBinaryFiles.join('\n')}`);

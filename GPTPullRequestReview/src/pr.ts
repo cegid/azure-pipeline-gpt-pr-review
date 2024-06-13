@@ -1,7 +1,6 @@
 import * as tl from "azure-pipelines-task-lib/task";
 import { Agent } from 'https';
-import fetch from 'node-fetch';
-
+// import fetch from 'node-fetch';
 
 /**
  * Retrieves system variables from the runtime environment.
@@ -53,7 +52,8 @@ export async function addCommentToPR(fileName: string, comment: string, httpsAge
 
   const prUrl = `${systemCollectionUri}${systemProjectId}/_apis/git/repositories/${systemRepositoryName}/pullRequests/${systemPullRequestId}/threads?api-version=5.1`
 
-  await fetch(prUrl, {
+  const nodeFetch = (await import('node-fetch')).default;
+  await nodeFetch(prUrl, {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${systemAccessToken}`, 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -89,7 +89,8 @@ export async function deleteExistingComments(httpsAgent: Agent) {
   const threadsUrl = `${systemCollectionUri}${systemProjectId}/_apis/git/repositories/${systemRepositoryName}/pullRequests/${systemPullRequestId}/threads?api-version=5.1`;
   
   // Fetch threads from Azure DevOps API
-  const threadsResponse = await fetch(threadsUrl, {
+  const nodeFetch = (await import('node-fetch')).default;
+  const threadsResponse = await nodeFetch(threadsUrl, {
     headers: { Authorization: `Bearer ${systemAccessToken}` },
     agent: httpsAgent  // Using HTTPS agent for request configuration
   });
@@ -112,7 +113,7 @@ export async function deleteExistingComments(httpsAgent: Agent) {
     const commentsUrl = `${systemCollectionUri}${systemProjectId}/_apis/git/repositories/${systemRepositoryName}/pullRequests/${systemPullRequestId}/threads/${thread.id}/comments?api-version=5.1`;
     
     // Fetch comments from the Azure DevOps API
-    const commentsResponse = await fetch(commentsUrl, {
+    const commentsResponse = await nodeFetch(commentsUrl, {
       headers: { Authorization: `Bearer ${systemAccessToken}` },
       agent: httpsAgent
     });
@@ -126,7 +127,7 @@ export async function deleteExistingComments(httpsAgent: Agent) {
       const removeCommentUrl = `${systemCollectionUri}${systemProjectId}/_apis/git/repositories/${systemRepositoryName}/pullRequests/${systemPullRequestId}/threads/${thread.id}/comments/${comment.id}?api-version=5.1`;
 
       // Perform the delete operation
-      await fetch(removeCommentUrl, {
+      await nodeFetch(removeCommentUrl, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${systemAccessToken}` },
         agent: httpsAgent

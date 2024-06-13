@@ -1,4 +1,4 @@
-import fetch from 'node-fetch';
+// import fetch from 'node-fetch';
 import OpenAI from 'openai';
 import { addCommentToPR } from './pr';
 import { Agent } from 'https';
