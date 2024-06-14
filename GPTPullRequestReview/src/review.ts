@@ -2,7 +2,7 @@
 import OpenAI from 'openai';
 import { addCommentToPR } from './pr';
 import { Agent } from 'https';
-import * as tl from "azure-pipelines-task-lib/task";
+import { getInput } from './tl';
 import { SimpleGit } from 'simple-git';
 /**
  * Reviews a file using OpenAI's GPT-3 model.
@@ -42,7 +42,7 @@ export async function reviewFile(git: SimpleGit, targetBranch: string, fileName:
     // If an OpenAI instance is provided, use it to create a chat completion
     if (openai) {
       const response = await openai.chat.completions.create({
-        model: tl.getInput('model') || defaultOpenAIModel,
+        model: getInput('model') || defaultOpenAIModel,
         messages: [
           {
             role: "system",

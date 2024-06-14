@@ -4,6 +4,7 @@ import { deleteExistingComments } from './pr';
 import { reviewFile } from './review';
 import { getTargetBranchName } from './utils';
 import { getChangedFiles, initializeGit } from './git';
+import { getInput } from './tl';
 import https from 'https';
 
 /**
@@ -24,9 +25,9 @@ async function run() {
     // Initialize variables
     let openai: OpenAI | undefined;
     const supportSelfSignedCertificate = tl.getBoolInput('support_self_signed_certificate');
-    const apiKey = tl.getInput('api_key', true);
-    const aoiEndpoint = tl.getInput('aoi_endpoint');
-    const workingDir = tl.getInput('working_dir');
+    const apiKey = getInput('api_key', true);
+    const aoiEndpoint = getInput('aoi_endpoint');
+    const workingDir = getInput('working_dir');
 
     // Check if an API key is provided
     if (apiKey == undefined) {

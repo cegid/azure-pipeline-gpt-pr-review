@@ -6,7 +6,7 @@ import { getFileExtension } from './utils';
  * @param {string} baseDir - The base directory for the git operations.
  * @returns {SimpleGit} - The initialized SimpleGit instance.
  */
-export function initializeGit(baseDir: string): SimpleGit { 
+export function initializeGit(baseDir: string): SimpleGit {
   return simpleGit({ baseDir, binary: 'git' });
 }
 
@@ -17,16 +17,21 @@ export function initializeGit(baseDir: string): SimpleGit {
  * @returns {Promise<string[]>} - A promise that resolves to a list of changed non-binary files.
  */
 export async function getChangedFiles(git: SimpleGit, targetBranch: string) {
-  await git.addConfig('core.pager', 'cat');
-  await git.addConfig('core.quotepath', 'false');
-  await git.fetch();
+  try {
+    await git.addConfig('core.pager', 'cat');
+    await git.addConfig('core.quotepath', 'false');
+    await git.fetch();
 
-  const diffs: string = await git.diff([targetBranch, '--name-only', '--diff-filter=AM']);
-  const files = diffs.split('\n').filter(line => line.trim().length > 0);
-  const binaryExtensions = (await import('binary-extensions')).default;
-  const nonBinaryFiles = files.filter(file => !binaryExtensions.includes(getFileExtension(file)));
+    const diffs: string = await git.diff([targetBranch, '--name-only', '--diff-filter=AM']);
+    const files = diffs.split('\n').filter(line => line.trim().length > 0);
+    const binaryExtensions = (await import('binary-extensions')).default;
+    const nonBinaryFiles = files.filter(file => !binaryExtensions.includes(getFileExtension(file)));
 
-  console.log(`Changed Files (excluding binary files) : \n ${nonBinaryFiles.join('\n')}`);
+    console.log(`Changed Files (excluding binary files) : \n ${nonBinaryFiles.join('\n')}`);
 
-  return nonBinaryFiles;
+    return nonBinaryFiles;
+  } catch (_error) {
+    console.error("Error in getChangedFiles function", _error);
+    throw _error;
+  }
 }
