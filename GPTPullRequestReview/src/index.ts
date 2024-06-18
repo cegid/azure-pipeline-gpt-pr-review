@@ -36,8 +36,7 @@ async function run() {
     }
 
     // Check if an AOI endpoint is provided
-    if (aoiEndpoint == undefined) {
-
+    if (!aoiEndpoint) {
       openai = new OpenAI({
         apiKey: apiKey,
       });
@@ -60,7 +59,7 @@ async function run() {
       return;
     }
 
-    const changedFiles = await getChangedFiles(git,targetBranch);
+    const changedFiles = await getChangedFiles(git, targetBranch);
 
     // Check if there are any changed files
     if (changedFiles.length === 0) {

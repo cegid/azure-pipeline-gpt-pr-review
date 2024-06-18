@@ -1,4 +1,3 @@
-// import fetch from 'node-fetch';
 import OpenAI from 'openai';
 import { addCommentToPR } from './pr';
 import { Agent } from 'https';
@@ -22,6 +21,7 @@ export async function reviewFile(git: SimpleGit, targetBranch: string, fileName:
 
   // Define the default OpenAI model
   const defaultOpenAIModel = 'gpt-3.5-turbo';
+  const nodeFetch = (await import('node-fetch')).default;
 
   // Get the diff between the target branch and the file
   const patch = await git.diff([targetBranch, '--', fileName]);
@@ -55,12 +55,13 @@ export async function reviewFile(git: SimpleGit, targetBranch: string, fileName:
         ],
         max_tokens: 500
       });
+      console.log("OpenAI response", response);
 
       choices = response.choices
     }
     // If an AI endpoint is provided, use it to create a chat completion
     else if (aoiEndpoint) {
-      const request = await fetch(aoiEndpoint, {
+      const request = await nodeFetch(aoiEndpoint, {
         method: 'POST',
         headers: { 'api-key': `${apiKey}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -74,8 +75,11 @@ export async function reviewFile(git: SimpleGit, targetBranch: string, fileName:
 
       // Get the choices from the response
       const response:any = await request.json();
+      console.log("response", response)
 
       choices = response?.choices;
+    }else {
+      throw new Error("OpenAI instance or AI endpoint is required.");
     }
 
     // If there are choices, get the review from the first choice
