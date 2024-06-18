@@ -13,6 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@azure/openai": "^1.0.0-beta.12",
     "azure-pipelines-task-lib": "^4.13.0",
     "binary-extensions": "^3.0.0",
     "node-fetch": "^3.3.2",

@@ -1,11 +1,11 @@
 import * as tl from "azure-pipelines-task-lib/task";
-import OpenAI from 'openai';
 import { deleteExistingComments } from './pr';
 import { reviewFile } from './review';
 import { getTargetBranchName } from './utils';
 import { getChangedFiles, initializeGit } from './git';
 import { getInput } from './tl';
 import https from 'https';
+import { OpenAIClient, AzureKeyCredential, OpenAIKeyCredential } from '@azure/openai';
 
 /**
  * Main function to run the task.
@@ -23,11 +23,12 @@ async function run() {
     }
 
     // Initialize variables
-    let openai: OpenAI | undefined;
+    let openai: OpenAIClient | undefined;
     const supportSelfSignedCertificate = tl.getBoolInput('support_self_signed_certificate');
     const apiKey = getInput('api_key', true);
     const aoiEndpoint = getInput('aoi_endpoint');
     const workingDir = getInput('working_dir');
+    const azure = tl.getBoolInput('azure');
 
     // Check if an API key is provided
     if (apiKey == undefined) {
@@ -36,10 +37,11 @@ async function run() {
     }
 
     // Check if an AOI endpoint is provided
-    if (!aoiEndpoint) {
-      openai = new OpenAI({
-        apiKey: apiKey,
-      });
+    if( azure) {
+      openai = new OpenAIClient(aoiEndpoint, new AzureKeyCredential(apiKey));
+    }
+    else if (!aoiEndpoint) {
+      openai = new OpenAIClient(new OpenAIKeyCredential(apiKey));
     }
 
     // Initialize Git with the working directory

@@ -1,8 +1,9 @@
-import OpenAI from 'openai';
 import { addCommentToPR } from './pr';
 import { Agent } from 'https';
 import { getInput } from './tl';
 import { SimpleGit } from 'simple-git';
+import { OpenAIClient, AzureKeyCredential } from '@azure/openai';
+
 /**
  * Reviews a file using OpenAI's GPT-3 model.
  * The review is based on the diff between the target branch and the file.
@@ -13,10 +14,10 @@ import { SimpleGit } from 'simple-git';
  * @param {string} fileName - The name of the file to review.
  * @param {Agent} httpsAgent - The HTTPS agent.
  * @param {string} apiKey - The API key for OpenAI.
- * @param {OpenAIApi | undefined} openai - The OpenAI instance.
+ * @param {OpenAIClient | undefined} openai - The OpenAI instance.
  * @param {string | undefined} aoiEndpoint - The endpoint for the AI.
  */
-export async function reviewFile(git: SimpleGit, targetBranch: string, fileName: string, httpsAgent: Agent, apiKey: string, openai: OpenAI | undefined, aoiEndpoint: string | undefined) {
+export async function reviewFile(git: SimpleGit, targetBranch: string, fileName: string, httpsAgent: Agent, apiKey: string, openai: OpenAIClient | undefined, aoiEndpoint: string | undefined) {
   console.log(`Start reviewing ${fileName} ...`);
 
   // Define the default OpenAI model
@@ -37,27 +38,29 @@ export async function reviewFile(git: SimpleGit, targetBranch: string, fileName:
                 - If there's bug or uncorrect code changes, don't write 'No feedback.'`;
 
   try {
-    let choices: any;
+    let choices: Array<any> = [];
 
     // If an OpenAI instance is provided, use it to create a chat completion
     if (openai) {
-      const response = await openai.chat.completions.create({
-        model: getInput('model') || defaultOpenAIModel,
-        messages: [
-          {
-            role: "system",
-            content: instructions
-          },
-          {
-            role: "user",
-            content: patch
-          }
-        ],
-        max_tokens: 500
-      });
-      console.log("OpenAI response", response);
+      
+      const response = await openai.streamChatCompletions(getInput('model') || defaultOpenAIModel,
+      [
+        {
+          role: "system",
+          content: instructions
+        },
+        {
+          role: "user",
+          content: patch
+        }
+      ], { maxTokens: 500 }
+    );
 
-      choices = response.choices
+      for await (const event of response) {
+        for (const choice of event.choices) {
+          choices.push(choice);
+        }
+      }
     }
     // If an AI endpoint is provided, use it to create a chat completion
     else if (aoiEndpoint) {
