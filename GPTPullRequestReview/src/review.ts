@@ -2,7 +2,6 @@ import { addCommentToPR } from './pr';
 import { Agent } from 'https';
 import { getInput } from './tl';
 import { SimpleGit } from 'simple-git';
-import { OpenAIClient, AzureKeyCredential } from '@azure/openai';
 
 /**
  * Reviews a file using OpenAI's GPT-3 model.
@@ -17,7 +16,7 @@ import { OpenAIClient, AzureKeyCredential } from '@azure/openai';
  * @param {OpenAIClient | undefined} openai - The OpenAI instance.
  * @param {string | undefined} aoiEndpoint - The endpoint for the AI.
  */
-export async function reviewFile(git: SimpleGit, targetBranch: string, fileName: string, httpsAgent: Agent, apiKey: string, openai: OpenAIClient | undefined, aoiEndpoint: string | undefined) {
+export async function reviewFile(git: SimpleGit, targetBranch: string, fileName: string, httpsAgent: Agent, apiKey: string, openai: object | undefined, aoiEndpoint: string | undefined) {
   console.log(`Start reviewing ${fileName} ...`);
 
   // Define the default OpenAI model
@@ -42,8 +41,9 @@ export async function reviewFile(git: SimpleGit, targetBranch: string, fileName:
 
     // If an OpenAI instance is provided, use it to create a chat completion
     if (openai) {
-      
-      const response = await openai.streamChatCompletions(getInput('model') || defaultOpenAIModel,
+      const { OpenAIClient } = await require('@azure/openai');
+
+      const response = (await openai as typeof OpenAIClient).streamChatCompletions(getInput('model') || defaultOpenAIModel,
       [
         {
           role: "system",

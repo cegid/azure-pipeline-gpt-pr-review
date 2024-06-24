@@ -1,11 +1,9 @@
-import * as tl from "azure-pipelines-task-lib/task";
 import { deleteExistingComments } from './pr';
 import { reviewFile } from './review';
 import { getTargetBranchName } from './utils';
 import { getChangedFiles, initializeGit } from './git';
 import { getInput } from './tl';
 import https from 'https';
-import { OpenAIClient, AzureKeyCredential, OpenAIKeyCredential } from '@azure/openai';
 
 /**
  * Main function to run the task.
@@ -15,15 +13,17 @@ import { OpenAIClient, AzureKeyCredential, OpenAIKeyCredential } from '@azure/op
  */
 
 async function run() {
+  const tl = await require("azure-pipelines-task-lib/task");
   try {
     // Check if the task is triggered by a Pull Request
     if (tl.getVariable('Build.Reason') !== 'PullRequest') {
       tl.setResult(tl.TaskResult.Skipped, "This task should be run only when the build is triggered from a Pull Request.");
       return;
     }
+    const { OpenAIClient, AzureKeyCredential,OpenAIKeyCredential } = require('@azure/openai');
 
     // Initialize variables
-    let openai: OpenAIClient | undefined;
+    let openai: object | undefined;
     const supportSelfSignedCertificate = tl.getBoolInput('support_self_signed_certificate');
     const apiKey = getInput('api_key', true);
     const aoiEndpoint = getInput('aoi_endpoint');

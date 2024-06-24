@@ -1,6 +1,5 @@
 import * as tl from "azure-pipelines-task-lib/task";
 import { Agent } from 'https';
-// import fetch from 'node-fetch';
 
 /**
  * Retrieves system variables from the runtime environment.

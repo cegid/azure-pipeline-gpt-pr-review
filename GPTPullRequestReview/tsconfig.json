@@ -2,10 +2,10 @@
   "include": ["./src/**/*"],
   "exclude": ["node_modules"],
   "compilerOptions": {
-    "module": "NodeNext",
-    "target": "ES2020",
+    "target": "es6",                          /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017', 'ES2018', 'ES2019', 'ES2020', or 'ESNEXT'. */
+    "module": "commonjs",                     /* Specify module code generation: 'none', 'commonjs', 'amd', 'system', 'umd', 'es2015', 'es2020', or 'ESNext'. */
     "outDir": "./dist",
-    "lib": ["ES2020"],
+    "lib": ["ES2015"],
     "types": ["node"],
     "allowJs": true,
     "baseUrl": ".",
@@ -13,8 +13,10 @@
     "emitDecoratorMetadata": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,
+    "isolatedModules": false,
+    "moduleResolution": "node",
     "resolveJsonModule": true,
-    "strict": true,
+    "strict": true
     // "rootDir": "./src",                       /* Specify the root directory of input files. Use to control the output directory structure with --outDir. */
   }
 }

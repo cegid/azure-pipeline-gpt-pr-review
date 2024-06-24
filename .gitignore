@@ -47,6 +47,7 @@ typings/
 
 # build output
 dist
+.parcel-cache
 
 # IDE files
 *.vsix
