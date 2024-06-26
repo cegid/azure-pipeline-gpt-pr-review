@@ -120,7 +120,7 @@ export async function deleteExistingComments(httpsAgent: Agent) {
     const commentsUrl = `${systemCollectionUri}${systemProjectId}/_apis/git/repositories/${systemRepositoryName}/pullRequests/${systemPullRequestId}/threads/${thread.id}/comments?api-version=5.1`;
     
     // Fetch comments from the Azure DevOps API
-    const commentsResponse = await nodeFetch(commentsUrl, {
+    const commentsResponse: Response = await nodeFetch(commentsUrl, {
       headers: { Authorization: `Bearer ${systemAccessToken}` },
       agent: httpsAgent
     });

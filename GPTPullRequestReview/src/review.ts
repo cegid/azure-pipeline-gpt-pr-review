@@ -65,7 +65,7 @@ export async function reviewFile(git: SimpleGit, targetBranch: string, fileName:
     }
     // If an AI endpoint is provided, use it to create a chat completion
     else if (aoiEndpoint) {
-      const request = await nodeFetch(aoiEndpoint, {
+      const request: Response = await nodeFetch(aoiEndpoint, {
         method: 'POST',
         headers: { 'api-key': `${apiKey}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
