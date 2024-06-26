@@ -90,10 +90,17 @@ export async function deleteExistingComments(httpsAgent: Agent) {
   
   // Fetch threads from Azure DevOps API
   const nodeFetch = (await dynamicImport('node-fetch')).default;
-  const threadsResponse = await nodeFetch(threadsUrl, {
+  const threadsResponse: Response = await nodeFetch(threadsUrl, {
     headers: { Authorization: `Bearer ${systemAccessToken}` },
     agent: httpsAgent  // Using HTTPS agent for request configuration
   });
+
+  // Get the response to know the status of the request to know if the token is valid
+  if (threadsResponse.status === 203) {
+    console.error("Invalid access token. Please check the access token and try again.");
+    throw new Error("Invalid access token. Please check the access token and try again.");
+  }
+
 
   // Parse the JSON response to get threads data
   const threads = await threadsResponse.json() as { value: [] };
