@@ -78,6 +78,7 @@ async function run() {
     tl.setResult(tl.TaskResult.Succeeded, "Pull Request reviewed.");
   }
   catch (err: any) {
+    console.error(err);
     tl.setResult(tl.TaskResult.Failed, err.message);
   }
 }

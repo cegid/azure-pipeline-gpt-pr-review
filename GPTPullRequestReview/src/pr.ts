@@ -1,5 +1,6 @@
 import * as tl from "azure-pipelines-task-lib/task";
 import { Agent } from 'https';
+import { dynamicImport } from "./utils";
 
 /**
  * Retrieves system variables from the runtime environment.
@@ -51,7 +52,7 @@ export async function addCommentToPR(fileName: string, comment: string, httpsAge
 
   const prUrl = `${systemCollectionUri}${systemProjectId}/_apis/git/repositories/${systemRepositoryName}/pullRequests/${systemPullRequestId}/threads?api-version=5.1`
 
-  const nodeFetch = (await import('node-fetch')).default;
+  const nodeFetch = (await dynamicImport('node-fetch')).default;
   await nodeFetch(prUrl, {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${systemAccessToken}`, 'Content-Type': 'application/json' },
@@ -88,7 +89,7 @@ export async function deleteExistingComments(httpsAgent: Agent) {
   const threadsUrl = `${systemCollectionUri}${systemProjectId}/_apis/git/repositories/${systemRepositoryName}/pullRequests/${systemPullRequestId}/threads?api-version=5.1`;
   
   // Fetch threads from Azure DevOps API
-  const nodeFetch = (await import('node-fetch')).default;
+  const nodeFetch = (await dynamicImport('node-fetch')).default;
   const threadsResponse = await nodeFetch(threadsUrl, {
     headers: { Authorization: `Bearer ${systemAccessToken}` },
     agent: httpsAgent  // Using HTTPS agent for request configuration

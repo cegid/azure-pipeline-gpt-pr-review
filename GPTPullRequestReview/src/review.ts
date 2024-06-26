@@ -2,6 +2,7 @@ import { addCommentToPR } from './pr';
 import { Agent } from 'https';
 import { getInput } from './tl';
 import { SimpleGit } from 'simple-git';
+import { dynamicImport } from './utils';
 
 /**
  * Reviews a file using OpenAI's GPT-3 model.
@@ -21,7 +22,7 @@ export async function reviewFile(git: SimpleGit, targetBranch: string, fileName:
 
   // Define the default OpenAI model
   const defaultOpenAIModel = 'gpt-3.5-turbo';
-  const nodeFetch = (await import('node-fetch')).default;
+  const nodeFetch = (await dynamicImport('node-fetch')).default;
 
   // Get the diff between the target branch and the file
   const patch = await git.diff([targetBranch, '--', fileName]);
