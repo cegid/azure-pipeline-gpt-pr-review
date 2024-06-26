@@ -101,7 +101,6 @@ export async function deleteExistingComments(httpsAgent: Agent) {
     throw new Error("Invalid access token. Please check the access token and try again.");
   }
 
-
   // Parse the JSON response to get threads data
   const threads = await threadsResponse.json() as { value: [] };
   
@@ -133,7 +132,6 @@ export async function deleteExistingComments(httpsAgent: Agent) {
     for (const comment of comments.value.filter((comment: any) => comment.author.displayName === buildServiceName) as any[]) {
       // Construct URL for deleting a specific comment
       const removeCommentUrl = `${systemCollectionUri}${systemProjectId}/_apis/git/repositories/${systemRepositoryName}/pullRequests/${systemPullRequestId}/threads/${thread.id}/comments/${comment.id}?api-version=5.1`;
-
 
       // Perform the delete operation
       await nodeFetch(removeCommentUrl, {

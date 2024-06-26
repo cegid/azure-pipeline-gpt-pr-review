@@ -29,14 +29,23 @@ export async function reviewFile(git: SimpleGit, targetBranch: string, fileName:
   const patch = await git.diff([targetBranch, '--', fileName]);
 
   // Define the instructions for the AI
-  const instructions = `Act as a code reviewer of a Pull Request, providing feedback on possible bugs and clean code issues.
-        You are provided with the Pull Request changes in a patch format.
-        Each patch entry has the commit message in the Subject line followed by the code changes (diffs) in a unidiff format.
+  const instructions = `As a PR reviewer, your role is key for code quality. \
+  Each patch entry includes the commit message in the Subject line followed by the code changes (diffs) in a unidiff format. \
+  Focus solely on changed lines. Classify your feedback into the following categories and format your feedback as indicated:
 
-        As a code reviewer, your task is:
-                - Review only added, edited or deleted lines.
-                - If there's no bugs and the changes are correct, write only 'No feedback.'
-                - If there's bug or uncorrect code changes, don't write 'No feedback.'`;
+  Critical:
+    - [] Line X: Description of the critical issue (e.g., syntax error, logic flaw).
+
+  Major:
+    - [] Line X: Description of major issue (e.g., performance inefficiency, violation of standards).
+
+  Minor:
+    - [] Line X: Description of minor issue (e.g., stylistic inconsistency, naming conventions).
+
+  Recommendations:
+    - Provide any general or specific actions you recommend based on the issues identified in the review. This could include suggestions for code enhancements, architectural changes, or process improvements.
+
+  If no issues are found, state 'No feedback.`;
 
   try {
     let choices: Array<any> = [];
@@ -65,7 +74,6 @@ export async function reviewFile(git: SimpleGit, targetBranch: string, fileName:
         for (const choice of event.choices) {
           const delta = choice.delta?.content;
           if (delta !== undefined) {
-            console.log(`Chatbot: ${delta}`);
             testResult += delta;
           }
         }
