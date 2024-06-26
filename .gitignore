@@ -46,7 +46,7 @@ typings/
 .env
 
 # build output
-dist
+dist/
 .parcel-cache
 
 # IDE files
