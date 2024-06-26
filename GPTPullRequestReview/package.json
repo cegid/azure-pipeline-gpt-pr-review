@@ -4,10 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "clean": "rm -rf dist",
     "build": "npm run clean && tsc -p .",
-    "test": "vitest",
+    "clean": "rm -rf dist",
     "coverage": "vitest run --coverage",
+    "run": "node --env-file .env dist/index.js",
+    "test": "vitest",
     "update-dependencies": "npx -y npm-check-updates -i"
   },
   "keywords": [],
