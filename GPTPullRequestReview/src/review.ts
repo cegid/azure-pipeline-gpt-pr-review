@@ -3,6 +3,7 @@ import { Agent } from 'https';
 import { getInput } from './tl';
 import { SimpleGit } from 'simple-git';
 import { dynamicImport } from './utils';
+import * as tl from "azure-pipelines-task-lib/task";
 
 /**
  * Reviews a file using OpenAI's GPT-3 model.
@@ -45,7 +46,7 @@ export async function reviewFile(git: SimpleGit, targetBranch: string, fileName:
       const { OpenAIClient } = await require('@azure/openai');
 
       const model = await getInput("model");
-      const response = await (await openai as typeof OpenAIClient).streamChatCompletions(model || defaultOpenAIModel,
+      const events = await (openai as typeof OpenAIClient).streamChatCompletions(model || defaultOpenAIModel,
         [
           {
             role: "system",
@@ -58,21 +59,23 @@ export async function reviewFile(git: SimpleGit, targetBranch: string, fileName:
         ], { maxTokens: 500 }
       );
 
-      for await (const event of response) {
+      let testResult = "";
+
+      for await (const event of events) {
         for (const choice of event.choices) {
-          console.log(choice);
-          console.log(choice.message);
-          console.log(choice.message?.content);
-          choices.push(choice);
+          const delta = choice.delta?.content;
+          if (delta !== undefined) {
+            console.log(`Chatbot: ${delta}`);
+            testResult += delta;
+          }
         }
       }
       // If there are choices, get the review from the first choice
-      if (choices && choices.length > 0) {
-        const review = choices[0].message?.content as string;
+      if (testResult && testResult.length > 0) {
 
         // If the review is not "No feedback.", add a comment to the PR
-        if (review?.trim() !== "No feedback.") {
-          await addCommentToPR(fileName, review, httpsAgent);
+        if (testResult?.trim() !== "No feedback.") {
+          await addCommentToPR(fileName, testResult, httpsAgent);
         }
       }
 
@@ -116,11 +119,13 @@ export async function reviewFile(git: SimpleGit, targetBranch: string, fileName:
   catch (error: any) {
     console.error(`Error reviewing ${fileName}`, error);
     // If there is an error, log it
-    if (error.response) {
+    if (error?.response) {
       console.log(error.response.status);
       console.log(error.response.data);
     } else {
-      console.log(error.message);
+      console.log(error?.message);
     }
+    tl.setResult(tl.TaskResult.Failed, error?.message);
+    throw error;
   }
 }
