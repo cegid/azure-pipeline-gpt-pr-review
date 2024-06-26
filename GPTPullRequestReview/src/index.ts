@@ -2,7 +2,7 @@ import { deleteExistingComments } from './pr';
 import { reviewFile } from './review';
 import { getTargetBranchName } from './utils';
 import { getChangedFiles, initializeGit } from './git';
-import { getInput } from './tl';
+import { getInput, getBoolInput } from './tl';
 import https from 'https';
 
 /**
@@ -24,11 +24,15 @@ async function run() {
 
     // Initialize variables
     let openai: object | undefined;
-    const supportSelfSignedCertificate = tl.getBoolInput('support_self_signed_certificate');
-    const apiKey = getInput('api_key', true);
-    const aoiEndpoint = getInput('aoi_endpoint');
-    const workingDir = getInput('working_dir');
-    const azure = tl.getBoolInput('azure');
+    const supportSelfSignedCertificate = getBoolInput('support_self_signed_certificate');
+    const apiKey = await getInput('api_key', true);
+    const aoiEndpoint = await getInput('aoi_endpoint');
+    const workingDir = await getInput('working_dir');
+    const azure = await getBoolInput('azure');
+
+    // Set the API key as a secret and set the access token as a secret
+    tl.setSecret(apiKey);
+    tl.setSecret(tl.getVariable('SYSTEM.ACCESSTOKEN'));
 
     // Check if an API key is provided
     if (apiKey == undefined) {
@@ -37,7 +41,11 @@ async function run() {
     }
 
     // Check if an AOI endpoint is provided
-    if( azure) {
+    if(azure) {
+      if(!aoiEndpoint) {
+        tl.setResult(tl.TaskResult.Failed, 'No AOI Endpoint provided!');
+        return;
+      }
       openai = new OpenAIClient(aoiEndpoint, new AzureKeyCredential(apiKey));
     }
     else if (!aoiEndpoint) {

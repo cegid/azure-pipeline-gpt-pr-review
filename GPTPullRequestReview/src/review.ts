@@ -44,28 +44,44 @@ export async function reviewFile(git: SimpleGit, targetBranch: string, fileName:
     if (openai) {
       const { OpenAIClient } = await require('@azure/openai');
 
-      const response = (await openai as typeof OpenAIClient).streamChatCompletions(getInput('model') || defaultOpenAIModel,
-      [
-        {
-          role: "system",
-          content: instructions
-        },
-        {
-          role: "user",
-          content: patch
-        }
-      ], { maxTokens: 500 }
-    );
+      const model = await getInput("model");
+      const response = await (await openai as typeof OpenAIClient).streamChatCompletions(model || defaultOpenAIModel,
+        [
+          {
+            role: "system",
+            content: instructions
+          },
+          {
+            role: "user",
+            content: patch
+          }
+        ], { maxTokens: 500 }
+      );
 
       for await (const event of response) {
         for (const choice of event.choices) {
+          console.log(choice);
+          console.log(choice.message);
+          console.log(choice.message?.content);
           choices.push(choice);
         }
       }
+      // If there are choices, get the review from the first choice
+      if (choices && choices.length > 0) {
+        const review = choices[0].message?.content as string;
+
+        // If the review is not "No feedback.", add a comment to the PR
+        if (review?.trim() !== "No feedback.") {
+          await addCommentToPR(fileName, review, httpsAgent);
+        }
+      }
+
+      // Log the completion of the review
+      console.log(`Review of ${fileName} completed.`);
     }
     // If an AI endpoint is provided, use it to create a chat completion
     else if (aoiEndpoint) {
-      const request: Response = await nodeFetch(aoiEndpoint, {
+      const request = await nodeFetch(aoiEndpoint, {
         method: 'POST',
         headers: { 'api-key': `${apiKey}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -79,27 +95,26 @@ export async function reviewFile(git: SimpleGit, targetBranch: string, fileName:
 
       // Get the choices from the response
       const response:any = await request.json();
-      console.log("response", response)
 
       choices = response?.choices;
+      // If there are choices, get the review from the first choice
+      if (choices && choices.length > 0) {
+        const review = choices[0].message?.content as string;
+
+        // If the review is not "No feedback.", add a comment to the PR
+        if (review?.trim() !== "No feedback.") {
+          await addCommentToPR(fileName, review, httpsAgent);
+        }
+      }
+
+      // Log the completion of the review
+      console.log(`Review of ${fileName} completed.`);
     }else {
       throw new Error("OpenAI instance or AI endpoint is required.");
     }
-
-    // If there are choices, get the review from the first choice
-    if (choices && choices.length > 0) {
-      const review = choices[0].message?.content as string;
-
-      // If the review is not "No feedback.", add a comment to the PR
-      if (review.trim() !== "No feedback.") {
-        await addCommentToPR(fileName, review, httpsAgent);
-      }
-    }
-
-    // Log the completion of the review
-    console.log(`Review of ${fileName} completed.`);
   }
   catch (error: any) {
+    console.error(`Error reviewing ${fileName}`, error);
     // If there is an error, log it
     if (error.response) {
       console.log(error.response.status);
