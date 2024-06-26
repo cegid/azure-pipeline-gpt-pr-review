@@ -1,9 +1,8 @@
-import * as tl from "azure-pipelines-task-lib/task";
-import OpenAI from 'openai';
 import { deleteExistingComments } from './pr';
 import { reviewFile } from './review';
 import { getTargetBranchName } from './utils';
 import { getChangedFiles, initializeGit } from './git';
+import { getInput, getBoolInput } from './tl';
 import https from 'https';
 
 /**
@@ -14,19 +13,26 @@ import https from 'https';
  */
 
 async function run() {
+  const tl = await require("azure-pipelines-task-lib/task");
   try {
     // Check if the task is triggered by a Pull Request
     if (tl.getVariable('Build.Reason') !== 'PullRequest') {
       tl.setResult(tl.TaskResult.Skipped, "This task should be run only when the build is triggered from a Pull Request.");
       return;
     }
+    const { OpenAIClient, AzureKeyCredential,OpenAIKeyCredential } = require('@azure/openai');
 
     // Initialize variables
-    let openai: OpenAI | undefined;
-    const supportSelfSignedCertificate = tl.getBoolInput('support_self_signed_certificate');
-    const apiKey = tl.getInput('api_key', true);
-    const aoiEndpoint = tl.getInput('aoi_endpoint');
-    const workingDir = tl.getInput('working_dir');
+    let openai: object | undefined;
+    const supportSelfSignedCertificate = getBoolInput('support_self_signed_certificate');
+    const apiKey = await getInput('api_key', true);
+    const aoiEndpoint = await getInput('aoi_endpoint');
+    const workingDir = await getInput('working_dir');
+    const azure = await getBoolInput('azure');
+
+    // Set the API key as a secret and set the access token as a secret
+    tl.setSecret(apiKey);
+    tl.setSecret(tl.getVariable('SYSTEM.ACCESSTOKEN'));
 
     // Check if an API key is provided
     if (apiKey == undefined) {
@@ -35,11 +41,15 @@ async function run() {
     }
 
     // Check if an AOI endpoint is provided
-    if (aoiEndpoint == undefined) {
-
-      openai = new OpenAI({
-        apiKey: apiKey,
-      });
+    if(azure) {
+      if(!aoiEndpoint) {
+        tl.setResult(tl.TaskResult.Failed, 'No AOI Endpoint provided!');
+        return;
+      }
+      openai = new OpenAIClient(aoiEndpoint, new AzureKeyCredential(apiKey));
+    }
+    else if (!aoiEndpoint) {
+      openai = new OpenAIClient(new OpenAIKeyCredential(apiKey));
     }
 
     // Initialize Git with the working directory
@@ -59,7 +69,7 @@ async function run() {
       return;
     }
 
-    const changedFiles = await getChangedFiles(git,targetBranch);
+    const changedFiles = await getChangedFiles(git, targetBranch);
 
     // Check if there are any changed files
     if (changedFiles.length === 0) {
@@ -76,6 +86,7 @@ async function run() {
     tl.setResult(tl.TaskResult.Succeeded, "Pull Request reviewed.");
   }
   catch (err: any) {
+    console.error(err);
     tl.setResult(tl.TaskResult.Failed, err.message);
   }
 }

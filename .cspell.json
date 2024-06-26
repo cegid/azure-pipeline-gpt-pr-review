@@ -12,7 +12,11 @@
 	],
 	"words": [
 		"ACCESSTOKEN",
+		"Cegid",
+		"cobertura",
+		"lcov",
 		"openai",
+		"quotepath",
 		"TEAMFOUNDATIONCOLLECTIONURI",
 		"TEAMPROJECT",
 		"TEAMPROJECTID"

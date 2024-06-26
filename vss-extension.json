@@ -1,9 +1,9 @@
 {
     "manifestVersion": 1,
-    "id": "GPTPullRequestReview",
-    "name": "GPT Pull Request Review",
-    "version": "0.12.3",
-    "publisher": "mustaphalarhrouch",
+    "id": "GPTPullRequestReviewCegid",
+    "name": "GPT Pull Request Review Cegid",
+    "version": "0.13.3",
+    "publisher": "cegid",
     "galleryFlags": [
         "Public",
         "Preview"
@@ -12,8 +12,8 @@
         {
             "id": "Microsoft.VisualStudio.Services"
         }
-    ],    
-    "description": "A task that review Pull Request using GPT model from OpenAI",
+    ],
+    "description": "A task that review Pull Request using GPT model from OpenAI. Cegid version.",
     "categories": [
         "Azure Pipelines"
     ],
@@ -31,9 +31,9 @@
             "path": "GPTPullRequestReview"
         }
     ],
-    "repository" : {
-        "type" : "git",
-        "uri" : "https://github.com/mlarhrouch/azure-pipeline-gpt-pr-review"
+    "repository": {
+        "type": "git",
+        "uri": "https://github.com/cegid/azure-pipeline-gpt-pr-review/"
     },
     "content": {
         "details": {
@@ -42,13 +42,13 @@
     },
     "contributions": [
         {
-            "id": "GPTPullRequestReview",
+            "id": "GPTPullRequestReviewCegid",
             "type": "ms.vss-distributed-task.task",
             "targets": [
                 "ms.vss-distributed-task.tasks"
             ],
             "properties": {
-                "name": "GPTPullRequestReview"
+                "name": "GPTPullRequestReviewCegid"
             }
         }
     ]

@@ -1,10 +1,10 @@
-import fetch from 'node-fetch';
-import { git } from './git';
-import OpenAI from 'openai';
 import { addCommentToPR } from './pr';
 import { Agent } from 'https';
-import * as tl from "azure-pipelines-task-lib/task";
+import { getInput } from './tl';
 import { SimpleGit } from 'simple-git';
+import { dynamicImport } from './utils';
+import * as tl from "azure-pipelines-task-lib/task";
+
 /**
  * Reviews a file using OpenAI's GPT-3 model.
  * The review is based on the diff between the target branch and the file.
@@ -15,36 +15,48 @@ import { SimpleGit } from 'simple-git';
  * @param {string} fileName - The name of the file to review.
  * @param {Agent} httpsAgent - The HTTPS agent.
  * @param {string} apiKey - The API key for OpenAI.
- * @param {OpenAIApi | undefined} openai - The OpenAI instance.
+ * @param {OpenAIClient | undefined} openai - The OpenAI instance.
  * @param {string | undefined} aoiEndpoint - The endpoint for the AI.
  */
-export async function reviewFile(git: SimpleGit, targetBranch: string, fileName: string, httpsAgent: Agent, apiKey: string, openai: OpenAI | undefined, aoiEndpoint: string | undefined) {
+export async function reviewFile(git: SimpleGit, targetBranch: string, fileName: string, httpsAgent: Agent, apiKey: string, openai: object | undefined, aoiEndpoint: string | undefined) {
   console.log(`Start reviewing ${fileName} ...`);
 
   // Define the default OpenAI model
   const defaultOpenAIModel = 'gpt-3.5-turbo';
+  const nodeFetch = (await dynamicImport('node-fetch')).default;
 
   // Get the diff between the target branch and the file
   const patch = await git.diff([targetBranch, '--', fileName]);
 
   // Define the instructions for the AI
-  const instructions = `Act as a code reviewer of a Pull Request, providing feedback on possible bugs and clean code issues.
-        You are provided with the Pull Request changes in a patch format.
-        Each patch entry has the commit message in the Subject line followed by the code changes (diffs) in a unidiff format.
+  const instructions = `As a PR reviewer, your role is key for code quality. \
+  Each patch entry includes the commit message in the Subject line followed by the code changes (diffs) in a unidiff format. \
+  Focus solely on changed lines. Classify your feedback into the following categories and format your feedback as indicated:
 
-        As a code reviewer, your task is:
-                - Review only added, edited or deleted lines.
-                - If there's no bugs and the changes are correct, write only 'No feedback.'
-                - If there's bug or uncorrect code changes, don't write 'No feedback.'`;
+  Critical:
+    - [] Line X: Description of the critical issue (e.g., syntax error, logic flaw).
+
+  Major:
+    - [] Line X: Description of major issue (e.g., performance inefficiency, violation of standards).
+
+  Minor:
+    - [] Line X: Description of minor issue (e.g., stylistic inconsistency, naming conventions).
+
+  Recommendations:
+    - Provide any general or specific actions you recommend based on the issues identified in the review. This could include suggestions for code enhancements, architectural changes, or process improvements.
+
+  If no issues are found, state 'No feedback.`;
 
   try {
-    let choices: any;
+    let choices: Array<any> = [];
 
     // If an OpenAI instance is provided, use it to create a chat completion
     if (openai) {
-      const response = await openai.chat.completions.create({
-        model: tl.getInput('model') || defaultOpenAIModel,
-        messages: [
+      const { OpenAIClient } = await require('@azure/openai');
+
+      const model = await getInput("model");
+      const events = await (openai as typeof OpenAIClient).streamChatCompletions(model || defaultOpenAIModel,
+        [
           {
             role: "system",
             content: instructions
@@ -53,15 +65,34 @@ export async function reviewFile(git: SimpleGit, targetBranch: string, fileName:
             role: "user",
             content: patch
           }
-        ],
-        max_tokens: 500
-      });
+        ], { maxTokens: 500 }
+      );
 
-      choices = response.choices
+      let testResult = "";
+
+      for await (const event of events) {
+        for (const choice of event.choices) {
+          const delta = choice.delta?.content;
+          if (delta !== undefined) {
+            testResult += delta;
+          }
+        }
+      }
+      // If there are choices, get the review from the first choice
+      if (testResult && testResult.length > 0) {
+
+        // If the review is not "No feedback.", add a comment to the PR
+        if (testResult?.trim() !== "No feedback.") {
+          await addCommentToPR(fileName, testResult, httpsAgent);
+        }
+      }
+
+      // Log the completion of the review
+      console.log(`Review of ${fileName} completed.`);
     }
     // If an AI endpoint is provided, use it to create a chat completion
     else if (aoiEndpoint) {
-      const request = await fetch(aoiEndpoint, {
+      const request = await nodeFetch(aoiEndpoint, {
         method: 'POST',
         headers: { 'api-key': `${apiKey}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -74,31 +105,35 @@ export async function reviewFile(git: SimpleGit, targetBranch: string, fileName:
       });
 
       // Get the choices from the response
-      const response = await request.json();
+      const response:any = await request.json();
 
-      choices = response.choices;
-    }
+      choices = response?.choices;
+      // If there are choices, get the review from the first choice
+      if (choices && choices.length > 0) {
+        const review = choices[0].message?.content as string;
 
-    // If there are choices, get the review from the first choice
-    if (choices && choices.length > 0) {
-      const review = choices[0].message?.content as string;
-
-      // If the review is not "No feedback.", add a comment to the PR
-      if (review.trim() !== "No feedback.") {
-        await addCommentToPR(fileName, review, httpsAgent);
+        // If the review is not "No feedback.", add a comment to the PR
+        if (review?.trim() !== "No feedback.") {
+          await addCommentToPR(fileName, review, httpsAgent);
+        }
       }
-    }
 
-    // Log the completion of the review
-    console.log(`Review of ${fileName} completed.`);
+      // Log the completion of the review
+      console.log(`Review of ${fileName} completed.`);
+    }else {
+      throw new Error("OpenAI instance or AI endpoint is required.");
+    }
   }
   catch (error: any) {
+    console.error(`Error reviewing ${fileName}`, error);
     // If there is an error, log it
-    if (error.response) {
+    if (error?.response) {
       console.log(error.response.status);
       console.log(error.response.data);
     } else {
-      console.log(error.message);
+      console.log(error?.message);
     }
+    tl.setResult(tl.TaskResult.Failed, error?.message);
+    throw error;
   }
 }

@@ -30,3 +30,7 @@ export function getTargetBranchName() {
 
   return `origin/${targetBranchName}`;
 }
+
+export async function dynamicImport(packageName: string) {
+  return new Function(`return import('${packageName}')`)();
+}
