@@ -112,9 +112,10 @@ export async function deleteExistingComments(httpsAgent: Agent) {
   const collectionName = getCollectionName(systemCollectionUri);
   
   // Build the display name used to identify comments made by the Azure build service
-  const buildServiceName = `${systemProject} Build Service (${collectionName})`;
+  const buildServiceName = tl.getVariable("build.service.name") || `${systemProject} Build Service (${collectionName})`;
 
   // Iterate over each thread that has context
+  let countCommentsDeleted = 0;
   for (const thread of threadsWithContext as any[]) {
     // Construct URL to fetch comments for each thread
     const commentsUrl = `${systemCollectionUri}${systemProjectId}/_apis/git/repositories/${systemRepositoryName}/pullRequests/${systemPullRequestId}/threads/${thread.id}/comments?api-version=5.1`;
@@ -133,14 +134,18 @@ export async function deleteExistingComments(httpsAgent: Agent) {
       // Construct URL for deleting a specific comment
       const removeCommentUrl = `${systemCollectionUri}${systemProjectId}/_apis/git/repositories/${systemRepositoryName}/pullRequests/${systemPullRequestId}/threads/${thread.id}/comments/${comment.id}?api-version=5.1`;
 
+
       // Perform the delete operation
       await nodeFetch(removeCommentUrl, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${systemAccessToken}` },
         agent: httpsAgent
       });
+      countCommentsDeleted++;
     }
   }
+
+  console.log(`Deleted ${countCommentsDeleted} comments.`);
 
   // Log completion of the deletion process
   console.log("Existing comments deleted.");
